@@ -14,3 +14,5 @@ github.com/Mukumbaa/goargv v1.4.2 h1:4XhDou+KION+aoXJuIdqg8QnV9AO0DG5YIYZ5R1Yl6g
 github.com/Mukumbaa/goargv v1.4.2/go.mod h1:J3BDEhf4TANN25OPgUmeDZPGL8QbWLLyJCMmcmoigMk=
 github.com/Mukumbaa/goargv v1.5.0 h1:zwz5Pt1IxaKz1kRRu8J6aCsj9ONtcENfatqcn4j6COc=
 github.com/Mukumbaa/goargv v1.5.0/go.mod h1:J3BDEhf4TANN25OPgUmeDZPGL8QbWLLyJCMmcmoigMk=
+github.com/Mukumbaa/goargv v1.5.1 h1:saqu4hCrntZXgZkpm2HvO9IW5Gkqs5drKjAhYtm2IVY=
+github.com/Mukumbaa/goargv v1.5.1/go.mod h1:J3BDEhf4TANN25OPgUmeDZPGL8QbWLLyJCMmcmoigMk=
