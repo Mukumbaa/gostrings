@@ -10,11 +10,11 @@ import (
 	"github.com/Mukumbaa/goargv"
 )
 
-func is_printable(r rune, include_all_whitespace bool, unicode byte) bool{
+func is_printable(r rune, includeAllWhitespace bool, unicode byte) bool{
 	if (r >= 32 && r <= 126) {
 		return true
 	}
-	if (include_all_whitespace) {
+	if (includeAllWhitespace) {
 		return (r >= 9 && r <= 13)
 	}
 	if (unicode == 'l' || unicode == 'e' || unicode == 'x' || unicode == 'h') && r > 127 && r != utf8.RuneError {
@@ -41,53 +41,64 @@ func create_rune_from_block(block []byte, encoding byte) rune{
 }
 
 func main(){
-	var min_len = 4
-	var source = []string{}
-	var print_file_name = false
-	var include_all_whitespace = false
-	var radix byte = ' '
-	var radix_o = false
-	var custom_separator = "\n"
-	var encoding byte = 's'
-	var unicode byte = 'd'
-	var byte_to_take = 1
+	var (
+		minLen int
+		source []string
+		printFileName bool
+		includeAllWhitespace bool
+		radix byte
+		radixO bool
+		customSeparator string
+		encoding byte
+		unicode byte
+		byteToTake int
+	)
 
-	p := goargv.New("gostrings")	
+	p := goargv.New("gostrings")
+
 	p.BindRest("source", &source, true, "", "Source files")
-	p.BindInt("n","bytes",&min_len, false, "", "Minimum bytes in a string")
+	p.BindInt("n", "bytes", &minLen, false, "", "Minimum bytes in a string")
+
 	p.BindChar("t", "radix", &radix, false, "d,x,o", "Print offset")
-	p.SetChoiceHelp("radix", "d", "decimal offset")
-	p.SetChoiceHelp("radix", "x", "hexadecimal offset")
-	p.SetChoiceHelp("radix", "o", "octal offset")
+	_ = p.SetChoiceHelp("radix", "d", "decimal offset")
+	_ = p.SetChoiceHelp("radix", "x", "hexadecimal offset")
+	_ = p.SetChoiceHelp("radix", "o", "octal offset")
+
 	p.BindChar("e", "encoding", &encoding, false, "s,S,b,B,l,L", "Select the character encoding of the strings that are to be found")
-	p.SetChoiceHelp("encoding", "s", "single-7-bit-byte characters")
-	p.SetChoiceHelp("encoding", "S", "single-8-bit-byte characters")
-	p.SetChoiceHelp("encoding", "b", "16-bit bigendian")
-	p.SetChoiceHelp("encoding", "B", "32-bit bigendian")
-	p.SetChoiceHelp("encoding", "l", "16-bit littleendian")
-	p.SetChoiceHelp("encoding", "L", "32-bit littleendian")
+	_ = p.SetChoiceHelp("encoding", "s", "single-7-bit-byte characters")
+	_ = p.SetChoiceHelp("encoding", "S", "single-8-bit-byte characters")
+	_ = p.SetChoiceHelp("encoding", "b", "16-bit bigendian")
+	_ = p.SetChoiceHelp("encoding", "B", "32-bit bigendian")
+	_ = p.SetChoiceHelp("encoding", "l", "16-bit littleendian")
+	_ = p.SetChoiceHelp("encoding", "L", "32-bit littleendian")
+
 	p.BindChar("U", "unicode", &unicode, false, "d,i,l,e,x,h", "Controls the display of UTF-8 encoded multibyte characters in strings")
-	p.SetChoiceHelp("unicode", "d", "default (rely on --encoding)")
-	p.SetChoiceHelp("unicode", "i", "treat multibyte as invalid")
-	p.SetChoiceHelp("unicode", "l", "display in current locale")
-	p.SetChoiceHelp("unicode", "e", "display as \\uXXXX escape")
-	p.SetChoiceHelp("unicode", "x", "display as hex <xx>")
-	p.SetChoiceHelp("unicode", "h", "highlight escape in red")
-	p.BindBool("o","radix-oct",&radix_o, "Same as -t o")
-	p.BindBool("f","print-file-name",&print_file_name, "Print file name")
-	p.BindBool("w","include-all-whitespace",&include_all_whitespace, "Include newlines/whitespace")
-	p.BindStr("s", "output-separator", &custom_separator, false, "", "Custom separator")
+	_ = p.SetChoiceHelp("unicode", "d", "default (rely on --encoding)")
+	_ = p.SetChoiceHelp("unicode", "i", "treat multibyte as invalid")
+	_ = p.SetChoiceHelp("unicode", "l", "display in current locale")
+	_ = p.SetChoiceHelp("unicode", "e", "display as \\uXXXX escape")
+	_ = p.SetChoiceHelp("unicode", "x", "display as hex <xx>")
+	_ = p.SetChoiceHelp("unicode", "h", "highlight escape in red")
+
+	p.BindBool("o", "radix-oct", &radixO, "Same as -t o")
+	p.BindBool("f", "print-file-name", &printFileName, "Print file name")
+	p.BindBool("w", "include-all-whitespace", &includeAllWhitespace, "Include newlines/whitespace")
+	p.BindStr("s", "output-separator", &customSeparator, false, "", "Custom separator")
+
+	_ = p.SetDefault("bytes", "4")
+	_ = p.SetDefault("encoding", "s")
+	_ = p.SetDefault("unicode", "d")
+	_ = p.SetDefault("output-separator", "\n")
 
 	p.SetVersion("latest", "V", "strings unix command re-write in go")
 
 	p.AddExclusive("t,o")
 	p.AddExclusive("e,U")
 
-
 	if err := p.Parse(os.Args[1:]); err != nil {
-    if errors.Is(err, goargv.ErrHelpRequested) || errors.Is(err, goargv.ErrVersionRequested) {
-        os.Exit(0)
-    }
+		if errors.Is(err, goargv.ErrHelpRequested) || errors.Is(err, goargv.ErrVersionRequested) {
+			os.Exit(0)
+		}
 
 		switch {
 		case errors.Is(err, goargv.ErrMutualExclusion):
@@ -102,18 +113,19 @@ func main(){
 		os.Exit(1)
 	}
 
-	if radix_o == true {
+	if radixO {
 		radix = 'o'
 	}
-	switch encoding{
+
+	switch encoding {
 	case 's', 'S':
-		byte_to_take = 1
+		byteToTake = 1
 	case 'b', 'l':
-		byte_to_take = 2
+		byteToTake = 2
 	case 'B', 'L':
-		byte_to_take = 4
+		byteToTake = 4
 	default:
-		byte_to_take = 1
+		byteToTake = 1
 	}
 
 	var printable_string strings.Builder
@@ -128,21 +140,21 @@ func main(){
 		start_offset = 0
 		var char_count = 0
 
-		for i := 0; i < len(fileBytes); i += byte_to_take {
+		for i := 0; i < len(fileBytes); i += byteToTake {
 			var rune_block rune
 			var block []byte
 			if encoding != ' ' {
-        if i+byte_to_take > len(fileBytes) {
+        if i+byteToTake > len(fileBytes) {
             break
         }
-				block = fileBytes[i : i+byte_to_take]
+				block = fileBytes[i : i+byteToTake]
 				rune_block = create_rune_from_block(block, encoding)
 			}else{
-				rune_block, byte_to_take = utf8.DecodeRune(fileBytes[i:])
-				block = fileBytes[i : i+byte_to_take]	
+				rune_block, byteToTake = utf8.DecodeRune(fileBytes[i:])
+				block = fileBytes[i : i+byteToTake]	
 			}
 
-			if is_printable(rune_block, include_all_whitespace, unicode) {
+			if is_printable(rune_block, includeAllWhitespace, unicode) {
 				if char_count == 0{
 					start_offset = i
 				}
@@ -174,8 +186,8 @@ func main(){
 					}
 				}
 			}else{
-				if char_count >= min_len {
-					if print_file_name {
+				if char_count >= minLen {
+					if printFileName {
 						fmt.Printf("%s: ",file)
 					}
 					if radix != ' ' {
@@ -191,14 +203,14 @@ func main(){
 						}
 					}
 
-					fmt.Printf("%s%s", printable_string.String(), custom_separator)
+					fmt.Printf("%s%s", printable_string.String(), customSeparator)
 				}
 				printable_string.Reset()
 				char_count = 0
 			}
 		}
-		if char_count >= min_len {
-			if print_file_name {
+		if char_count >= minLen {
+			if printFileName {
 				fmt.Printf("%s: ", file)
 			}
 			if radix != ' ' {
@@ -208,7 +220,7 @@ func main(){
 					case 'o': fmt.Printf("%7o ", start_offset)
 				}
 			}
-			fmt.Printf("%s%s", printable_string.String(), custom_separator)
+			fmt.Printf("%s%s", printable_string.String(), customSeparator)
 		}
 		printable_string.Reset()
 	}
